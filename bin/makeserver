@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+program
+  .version('0.1.0')
+  .option("-s, --server", "Start the server")
+  .option("-d, --dir <dir>", "Specify the location of config file")
+  .option("-p, --port <n>", "Port or the target server")
+  .option("--clean", "Clean objects and target files")
+  .option("--compile", "Send a compile request to a server")
+  .option("--compile", "Send a compile request to a server")
+  .option("--run", "Send a run request to a server")
+  .option("--crun", "Send a compile request to a server")
+  .parse(process.argv);
+
+const config = require("./config");
+const server = require("./server");
+const client = require("./client");
+const compiler = require("./compiler");
+
+function err()
+{
+  console.error("Invalid command parameters");
+  program.help();
+}
+
+(() => {
+  if(program.server)
+    return server.run();
+
+  if(program.clean)
+    return compiler.clean();
+
+  if(!program.port)
+    return err();
+
+  if(program.compile)
+    return client.sendCommand(program.port, "compile");
+
+  if(program.run)
+    return client.sendCommand(program.port, "run");
+
+  if(program.crun)
+    return client.sendCommand(program.port, "crun");
+
+
+  return err();
+
+
+})();

@@ -1,0 +1,10 @@
+{
+  "port": 3333,
+  "cc": "gcc",
+  "cflags": "-g -Wall -Wextra -pedantic -O0", 
+  "cxx": "clang++",
+  "cxxflags": "-g -Wall -Wextra -pedantic -O0 -std=c++14",
+  "ldflags": "-g -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio",
+  "target": "app.out",
+  "srcDirs": ["."]
+}
