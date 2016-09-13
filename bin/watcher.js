@@ -58,6 +58,7 @@ function DirWatcher(dir)
 
         deps.updateDependencies(file).then(() => {
           FileWatcher(file);
+          compiler.addFile(file);
         });
       });
 }

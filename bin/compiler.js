@@ -224,7 +224,6 @@ function silentRemove(files)
 
 function addFile(file)
 {
-  console.log("File added: ", file);
   srcs[file] = {
       state: States.NotCompiled,
       nextState: null
@@ -261,6 +260,19 @@ function filesChanged(files)
   return link();
 }
 
+function addFileOut(file)
+{
+  if(targetState == States.Compiling)
+    nexTargetState = States.NotCompiled;
+  else
+    targetState = States.NotCompiled;
+
+  console.log("File added: ", file);
+  addFile(file);
+  return link();
+}
+
+
 function clean()
 {
   return files.getSrcFiles().then((paths) => {
@@ -296,7 +308,7 @@ function crun()
 
 module.exports = {
   init,
-  addFile,
+  addFile: addFileOut,
   removeFile,
   filesChanged,
   clean,
