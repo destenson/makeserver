@@ -18,6 +18,10 @@
   "preferGlobal": true,
   "author": "Steven Lariau <obs145628@gmail.com> (https://github.com/obs145628)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/obs145628/makeserver"
+  },
   "dependencies": {
     "chokidar": "^1.6.0",
     "commander": "^2.9.0",
