@@ -6,6 +6,7 @@ const _ = require("lodash");
 const config = require("./config");
 const files = require("./files");
 const promises = require("./promises");
+const log = require("./log");
 
 const States = {
   NotCompiled: 1,
@@ -32,32 +33,36 @@ function getCompileCommand(file)
   let [compiler, flags] = isC ? [config.cc, config.cflags]
     : [config.cxx, config.cxxflags];
 
-  return compiler + " " + flags + " -c " + file + " -o " + out;
+  let pre = isC ? config.ccPre : config.cxxPre;
+  let post = isC ? config.ccPost : config.cxxPost;
+
+  return pre + compiler + " " + flags + " -c "
+    + file + " -o " + out + post;
 }
 
 function getLinkCommand()
 {
   let input = _.keys(srcs).map(getObject).join(" ");
-  return config.cxx + " " + config.cxxflags + " " + config.ldflags
-    + " " + input + " -o " + config.target;
+  return config.cxx + " " + config.cxxflags + " " + input
+    + " " + config.ldflags + " -o " + config.target;
 }
 
 function execCompile(file)
 {
   const cmd = getCompileCommand(file);
-  console.log(cmd);
+  log.i("Compiling " + path.relative(config.dir, file) + "...");
+  log.d(cmd);
   let source = srcs[file];
   source.state = States.Compiling;
 
   promises.cache(file, (resolve, reject) => {
-    exec(cmd, (err, stdout, stderr) => {
+    let child = exec(cmd, (err, stdout, stderr) => {
 
         let state;
 
         if(err)
         {
-          console.error("Command " + cmd + " failed");
-          console.error(stderr);
+          log.e("Command " + cmd + " failed");
           state = States.Fail;
         }
         else
@@ -75,6 +80,15 @@ function execCompile(file)
 
         resolve(source.state);
     });
+
+    child.stdout.on('data', (data) => {
+      process.stdout.write(data);
+    });
+
+    child.stderr.on('data', (data) => {
+      process.stderr.write(data);
+    });
+
   });
 }
 
@@ -100,21 +114,24 @@ function execLink()
       }
 
       const cmd = getLinkCommand();
-      console.log(cmd);
+      log.d(cmd);
+      log.i("Building binary...");
 
-      exec(cmd, (err, stdout, stderr) => {
+      let child = exec(cmd, (err, stdout, stderr) => {
 
         let state
 
         if(err)
         {
-          console.error("Command " + cmd + " failed");
-          console.error(stderr);
+          log.e("Command " + cmd + " failed");
           state = States.Fail;
         }
         else
         {
           state = States.Ok;
+          log.i("Binary "
+            + path.relative(config.dir, config.target)
+            + " successfully built");
         }
 
         if(nexTargetState != null)
@@ -126,6 +143,15 @@ function execLink()
           targetState = state;
         resolve(targetState);
       });
+
+      child.stdout.on('data', (data) => {
+        process.stdout.write(data);
+      });
+
+      child.stderr.on('data', (data) => {
+        process.stderr.write(data);
+      });
+
     })
 
     .catch((err) => {
@@ -143,7 +169,7 @@ function execRun()
   }
   catch(e)
   {
-    console.error("sigint failed", e);
+    log.e("sigint failed", e);
   }
 
   return new Promise((resolve, reject) => {
@@ -166,7 +192,7 @@ function execRun()
     }
     catch(e)
     {
-      console.log("spawn failed", e);
+      log.e("spawn failed", e);
     }
   });
 }
@@ -232,7 +258,7 @@ function addFile(file)
 
 function removeFile(file)
 {
-  console.log("File removed: ", file);
+  log.d("File removed: ", file);
   delete srcs[file];
   silentRemove([getObject(file)]);
 }
@@ -255,7 +281,7 @@ function filesChanged(files)
 {
   if(!files.length)
     return;
-  console.log("Files invalided: ", files);
+  log.d("Files invalided: ", files);
   files.forEach(fileChanged);
   return link();
 }
@@ -267,7 +293,7 @@ function addFileOut(file)
   else
     targetState = States.NotCompiled;
 
-  console.log("File added: ", file);
+  log.d("File added: ", file);
   addFile(file);
   return link();
 }

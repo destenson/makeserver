@@ -19,8 +19,12 @@ let config = JSON.parse(data);
 
 config.port = config.port || 3300;
 config.cc = config.cc || "gcc";
+config.ccPre = config.ccPre || "";
+config.ccPost = config.ccPost || "";
 config.cflags = config.cflags || "";
 config.cxx = config.cxx || "g++";
+config.cxxPre = config.cxxPre || "";
+config.cxxPost = config.cxxPost || "";
 config.cxxflags = config.cxxflags || "";
 config.ldflags = config.ldflags || "";
 config.target = config.target || "a.out";

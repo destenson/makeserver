@@ -2,6 +2,7 @@ const http = require("http");
 const config = require("./config");
 const watcher = require("./watcher");
 const compiler = require("./compiler");
+const log = require("./log");
 
 const port = config.port;
 
@@ -20,7 +21,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.on("listening", () => {
-  console.log("Server ready, listening on port " + port);
+  log.i("Server ready, listening on port " + port);
 });
 
 function run()
@@ -35,7 +36,7 @@ function run()
   })
 
   .catch((err) => {
-    console.error(err);
+    log.e(err);
   });
 }
 

@@ -25,7 +25,7 @@ function FileWatcher(file)
         })
 
         .catch((err) => {
-          console.error(err);
+          log.e(err);
         });
       })
 
